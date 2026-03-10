@@ -1,0 +1,100 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: hrms-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hrms_db
+      MYSQL_USER: hrms_user
+      MYSQL_PASSWORD: hrms_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - hrms-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: hrms-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hrms-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # HRMS API Server
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    container_name: hrms-api
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: mysql://root:root@hrms-mysql:3306/hrms_db
+      REDIS_URL: redis://hrms-redis:6379
+      JWT_SECRET: b26ba97229c1bd231b426ae7f09347470faf77c243f91192de9f439f8e5bfe71a9568010590a6de4ebb3e5745d5194eb92e5b1d5b41facf62b81e6a1f510f0f51ea3fa1b3a2fbb33f25f7d6ecb85a6267a62bebf47d09f91d8d73cd08506ee3550b5cae42f40b100287eb51215f20dacb7d64c6154ecc88baab20c4d5ea26b89
+      JWT_REFRESH_SECRET: fcca6ec05165d5aa6ee9f3cf7bc9320ff1334056b36f63ce976f9e49659655f81b1682f4ca0510e3c2ea47212c8fb4a22170b2896e10e22803bf9a667e1eced82721f39f283a4bcccefbbdd249083af10af30a535ff01f6a2f9118aba9905c4c33e5b843e283e626faeeaf4dab36bcab3807c696965923cdffb9e3195baeee1d
+      ENCRYPTION_KEY: 002a9b41e90b99bd59f9470cebb83f8ef062a0d3a0170382d4502245f03b85f2
+      CORS_ORIGIN: http://localhost:3000
+      BCRYPT_ROUNDS: 12
+      MFA_ISSUER: HRMS
+      MFA_WINDOW: 2
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    ports:
+      - "3001:3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./packages/api:/app/packages/api
+      - /app/packages/api/node_modules
+    networks:
+      - hrms-network
+    command: sh -c "cd /app/packages/api && npx prisma generate && npx prisma db push && npm start"
+
+  # HRMS Web Application
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    container_name: hrms-web
+    environment:
+      NODE_ENV: development
+      REACT_APP_API_URL: http://localhost:3001/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./packages/web:/app/packages/web
+      - /app/packages/web/node_modules
+    networks:
+      - hrms-network
+    command: sh -c "cd /app/packages/web && npm start"
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  hrms-network:
+    driver: bridge

@@ -1,0 +1,42 @@
+{
+  "name": "hrms-system",
+  "version": "1.0.0",
+  "description": "Comprehensive Human Resource Management System",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"cd packages/api && npm run dev\" \"cd packages/web && npm start\"",
+    "dev:api": "cd packages/api && npm run dev",
+    "dev:web": "cd packages/web && npm start",
+    "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "build:shared": "cd packages/shared && npm run build",
+    "build:api": "cd packages/api && npm run build",
+    "build:web": "cd packages/web && npm run build",
+    "test": "cd packages/api && npm test && cd ../web && npm test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "db:generate": "cd packages/api && npm run prisma:generate",
+    "db:migrate": "cd packages/api && npm run prisma:migrate",
+    "db:seed": "cd packages/api && npm run seed",
+    "db:studio": "cd packages/api && npx prisma studio",
+    "db:reset": "cd packages/api && npx prisma migrate reset",
+    "setup:local": "npm install && cd packages/api && npm install && cd ../web && npm install && cd ../shared && npm install",
+    "check:db": "cd packages/api && node test-connection.js"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
