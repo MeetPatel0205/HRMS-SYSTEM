@@ -7,44 +7,26 @@ import { Permission } from '../shared/types'
 const router = Router()
 const employeeController = new EmployeeController()
 
-// Employee CRUD routes
+// Employee list
 router.get('/',
   requirePermission(Permission.READ_EMPLOYEE),
   asyncHandler(employeeController.getEmployees.bind(employeeController))
 )
 
-router.get('/:id',
-  requireOwnership(req => req.params.id),
-  asyncHandler(employeeController.getEmployee.bind(employeeController))
-)
-
-router.post('/',
-  requirePermission(Permission.WRITE_EMPLOYEE),
-  asyncHandler(employeeController.createEmployee.bind(employeeController))
-)
-
-router.put('/:id',
-  requireOwnership(req => req.params.id),
-  asyncHandler(employeeController.updateEmployee.bind(employeeController))
-)
-
-router.delete('/:id',
-  requirePermission(Permission.DELETE_EMPLOYEE),
-  asyncHandler(employeeController.deleteEmployee.bind(employeeController))
-)
-
-// Search and filtering
+// --- Static routes MUST be registered BEFORE parameterized routes ---
+// Statistics (must be above /:id to avoid Express treating "statistics" as an id)
 router.get('/statistics',
   requirePermission(Permission.READ_EMPLOYEE),
   asyncHandler(employeeController.getStatistics.bind(employeeController))
 )
 
+// Search and filtering
 router.post('/search',
   requirePermission(Permission.READ_EMPLOYEE),
   asyncHandler(employeeController.searchEmployees.bind(employeeController))
 )
 
-// Organizational structure
+// Organizational structure (all static /organization/* routes before /:id)
 router.get('/organization/chart',
   requirePermission(Permission.READ_EMPLOYEE),
   asyncHandler(employeeController.getOrganizationChart.bind(employeeController))
@@ -73,6 +55,27 @@ router.put('/organization/reporting-structure',
 router.get('/manager/:managerId/reports',
   requirePermission(Permission.READ_EMPLOYEE),
   asyncHandler(employeeController.getEmployeesByManager.bind(employeeController))
+)
+
+// --- Parameterized routes AFTER all static routes ---
+router.get('/:id',
+  requireOwnership(req => req.params.id),
+  asyncHandler(employeeController.getEmployee.bind(employeeController))
+)
+
+router.post('/',
+  requirePermission(Permission.WRITE_EMPLOYEE),
+  asyncHandler(employeeController.createEmployee.bind(employeeController))
+)
+
+router.put('/:id',
+  requireOwnership(req => req.params.id),
+  asyncHandler(employeeController.updateEmployee.bind(employeeController))
+)
+
+router.delete('/:id',
+  requirePermission(Permission.DELETE_EMPLOYEE),
+  asyncHandler(employeeController.deleteEmployee.bind(employeeController))
 )
 
 export default router
