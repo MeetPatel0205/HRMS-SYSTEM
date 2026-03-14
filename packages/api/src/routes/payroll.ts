@@ -8,10 +8,34 @@ const controller = new PayrollController();
 
 router.use(authenticate);
 
-// Admin: Process Payroll
-router.post('/process',
+// Admin: Simulate Payroll Run
+router.post('/runs/simulate',
     requirePermission(Permission.PROCESS_PAYROLL),
-    controller.processPayroll.bind(controller)
+    controller.simulate.bind(controller)
+);
+
+// Admin: Create Draft Run
+router.post('/runs',
+    requirePermission(Permission.PROCESS_PAYROLL),
+    controller.createRun.bind(controller)
+);
+
+// Admin: Submit Run for Approval
+router.put('/runs/:id/submit',
+    requirePermission(Permission.PROCESS_PAYROLL),
+    controller.submitRun.bind(controller)
+);
+
+// Admin: Approve Run
+router.put('/runs/:id/approve',
+    requirePermission(Permission.PROCESS_PAYROLL),
+    controller.approveRun.bind(controller)
+);
+
+// Admin: Export Bank File
+router.get('/export-bank-file',
+    requirePermission(Permission.PROCESS_PAYROLL),
+    controller.exportBankFile.bind(controller)
 );
 
 // Employee: View History
