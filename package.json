@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"cd packages/api && npm run dev\" \"cd packages/web && npm start\"",
+    "dev": "concurrently --names API,WEB --prefix-colors blue,green --kill-others-on-fail \"cd packages/api && npm run dev\" \"cd packages/web && npm start\"",
     "dev:api": "cd packages/api && npm run dev",
     "dev:web": "cd packages/web && npm start",
     "build": "npm run build:shared && npm run build:api && npm run build:web",
