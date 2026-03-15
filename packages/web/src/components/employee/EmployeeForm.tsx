@@ -16,6 +16,18 @@ import {
 } from '@mui/material';
 import { EmployeeService, Employee, PersonalInfo, ContactInfo, EmploymentInfo } from '../../services/employeeService';
 
+const CURRENCIES = [
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+    { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+    { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
+    { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+    { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
+];
 interface EmployeeFormProps {
     initialData?: Partial<Employee>;
     onSubmit: (data: any) => void;
@@ -301,7 +313,20 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({ initialData, onSubmi
                         <TextField fullWidth type="number" label="Base Salary" value={employmentInfo.salaryInfo?.baseSalary} onChange={handleSalaryChange('baseSalary')} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <TextField fullWidth label="Currency" value={employmentInfo.salaryInfo?.currency} onChange={handleSalaryChange('currency')} />
+                        <FormControl fullWidth>
+                            <InputLabel>Currency</InputLabel>
+                            <Select 
+                                value={employmentInfo.salaryInfo?.currency || 'USD'} 
+                                label="Currency" 
+                                onChange={handleSalaryChange('currency') as any}
+                            >
+                                {CURRENCIES.map((currency) => (
+                                    <MenuItem key={currency.code} value={currency.code}>
+                                        {currency.symbol} - {currency.code} ({currency.name})
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </Grid>
                 </Grid>
             </TabPanel>

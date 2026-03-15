@@ -183,11 +183,10 @@ export class EmployeeController {
         department: data.employmentInfo.department,
         location: data.employmentInfo.location,
         managerId: data.employmentInfo.managerId,
-        salaryInfo: data.employmentInfo.salaryInfo,
         skills: [],
         certifications: [],
         languages: [],
-        customFields: data.customFields || {},
+        customFields: { ...(data.customFields || {}), salaryInfo: data.employmentInfo.salaryInfo },
         createdBy: userId,
         updatedBy: userId
       },
@@ -272,12 +271,13 @@ export class EmployeeController {
           jobTitle: data.employmentInfo.jobTitle,
           department: data.employmentInfo.department,
           location: data.employmentInfo.location,
-          managerId: data.employmentInfo.managerId,
-          salaryInfo: data.employmentInfo.salaryInfo
+          managerId: data.employmentInfo.managerId
         }),
-        ...(data.customFields && {
-          customFields: { ...(existingEmployee.customFields as object || {}), ...data.customFields }
-        }),
+        customFields: {
+          ...(existingEmployee.customFields as object || {}),
+          ...(data.customFields || {}),
+          ...(data.employmentInfo?.salaryInfo ? { salaryInfo: data.employmentInfo.salaryInfo } : {})
+        },
         updatedBy: userId
       },
       include: {
@@ -639,7 +639,7 @@ export class EmployeeController {
         department: employee.department,
         location: employee.location,
         managerId: employee.managerId,
-        salaryInfo: employee.salaryInfo
+        salaryInfo: employee.salaryInfo || (employee.customFields as any)?.salaryInfo
       },
       customFields: employee.customFields,
       auditInfo: {
